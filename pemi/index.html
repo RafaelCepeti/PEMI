@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PEMI - PROGRAMA DE ESPECIALIZAÇÃO EM MEDICINA INTENSIVA CEPETI/AMIB</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .container {
+      text-align: center;
+      padding: 20px;
+      background: #ffffff;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+      max-width: 400px;
+      width: 90%;
+    }
+    .logo {
+      max-width: 150px;
+      margin-bottom: 20px;
+    }
+    .timer {
+      font-size: 2rem;
+      margin: 20px 0;
+      color: #333;
+    }
+    .alert {
+      color: #e74c3c;
+      font-weight: bold;
+      display: none;
+      margin: 10px 0;
+    }
+    .button-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .start-btn, .reset-btn, .fullscreen-btn {
+      background-color: #3498db;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      margin: 5px 0;
+    }
+    .start-btn:hover, .reset-btn:hover, .fullscreen-btn:hover {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Espaço para a logo -->
+    <img src="cepeti.png" alt="Logo" class="logo">
+
+    <h1>TEMPO DE PROVA</h1>
+    <p class="timer">00:00</p>
+    <p class="alert">30 minutos restantes!</p>
+    <div class="button-container">
+      <button class="start-btn">Iniciar Timer</button>
+      <button class="reset-btn" style="display: none;">Resetar Timer</button>
+      <button class="fullscreen-btn">Tela Cheia</button>
+    </div>
+  </div>
+
+  <script>
+    const timerDisplay = document.querySelector('.timer');
+    const alertDisplay = document.querySelector('.alert');
+    const startButton = document.querySelector('.start-btn');
+    const resetButton = document.querySelector('.reset-btn');
+    const fullscreenButton = document.querySelector('.fullscreen-btn');
+
+    let timerInterval;
+    let currentSecond = 0;
+    const totalSeconds = 3600; // 1 hora em segundos
+    const alerts = [1800, 2700, 3300]; // 30, 45 e 55 minutos em segundos
+    const alertMessages = ["Faltam 30 minutos!", "Faltam 15 minutos!", "Faltam 5 minutos!"];
+    const alertSounds = ["calm-sound1.mp3", "calm-sound2.mp3", "calm-sound3.mp3"];
+
+    function playSound(index) {
+      const audio = new Audio(alertSounds[index]);
+      audio.play();
+    }
+
+    function startTimer() {
+      startButton.disabled = true; // Desabilitar botão após iniciar
+      resetButton.style.display = 'block'; // Mostrar botão de reset
+      timerInterval = setInterval(() => {
+        currentSecond++;
+
+        // Atualizar exibição do tempo
+        const minutes = String(Math.floor(currentSecond / 60)).padStart(2, '0');
+        const seconds = String(currentSecond % 60).padStart(2, '0');
+        timerDisplay.textContent = `${minutes}:${seconds}`;
+
+        // Verificar se está em um segundo de alerta
+        const alertIndex = alerts.indexOf(currentSecond);
+        if (alertIndex !== -1) {
+          alertDisplay.textContent = alertMessages[alertIndex];
+          alertDisplay.style.display = 'block';
+          playSound(alertIndex);
+
+          // Remover alerta após 3 segundos
+          setTimeout(() => {
+            alertDisplay.style.display = 'none';
+          }, 3000);
+        }
+
+        // Parar o timer após 1 hora
+        if (currentSecond >= totalSeconds) {
+          clearInterval(timerInterval);
+          timerDisplay.textContent = 'Tempo concluído!';
+        }
+      }, 1000); // 1 segundo em tempo real
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      currentSecond = 0;
+      timerDisplay.textContent = '00:00';
+      startButton.disabled = false;
+      resetButton.style.display = 'none';
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    startButton.addEventListener('click', startTimer);
+    resetButton.addEventListener('click', resetTimer);
+    fullscreenButton.addEventListener('click', toggleFullscreen);
+  </script>
+</body>
+</html>
