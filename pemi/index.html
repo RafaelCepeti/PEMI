@@ -30,7 +30,7 @@
       margin-bottom: 20px;
     }
     .timer {
-      font-size: 2rem;
+      font-size: 2.5rem;
       margin: 20px 0;
       color: #333;
     }
@@ -45,7 +45,7 @@
       flex-direction: column;
       align-items: center;
     }
-    .start-btn, .reset-btn, .fullscreen-btn {
+    .start-btn, .pause-btn, .reset-btn, .fullscreen-btn {
       background-color: #3498db;
       color: #fff;
       border: none;
@@ -56,7 +56,7 @@
       transition: background-color 0.3s;
       margin: 5px 0;
     }
-    .start-btn:hover, .reset-btn:hover, .fullscreen-btn:hover {
+    .start-btn:hover, .pause-btn:hover, .reset-btn:hover, .fullscreen-btn:hover {
       background-color: #2980b9;
     }
   </style>
@@ -71,6 +71,7 @@
     <p class="alert">30 minutos restantes!</p>
     <div class="button-container">
       <button class="start-btn">Iniciar Timer</button>
+      <button class="pause-btn" style="display: none;">Pausar Timer</button>
       <button class="reset-btn" style="display: none;">Resetar Timer</button>
       <button class="fullscreen-btn">Tela Cheia</button>
     </div>
@@ -80,11 +81,13 @@
     const timerDisplay = document.querySelector('.timer');
     const alertDisplay = document.querySelector('.alert');
     const startButton = document.querySelector('.start-btn');
+    const pauseButton = document.querySelector('.pause-btn');
     const resetButton = document.querySelector('.reset-btn');
     const fullscreenButton = document.querySelector('.fullscreen-btn');
 
     let timerInterval;
     let currentSecond = 0;
+    let isPaused = false;
     const totalSeconds = 3600; // 1 hora em segundos
     const alerts = [1800, 2700, 3300]; // 30, 45 e 55 minutos em segundos
     const alertMessages = ["Faltam 30 minutos!", "Faltam 15 minutos!", "Faltam 5 minutos!"];
@@ -96,43 +99,54 @@
     }
 
     function startTimer() {
-      startButton.disabled = true; // Desabilitar botão após iniciar
-      resetButton.style.display = 'block'; // Mostrar botão de reset
+      startButton.style.display = 'none';
+      pauseButton.style.display = 'block';
+      resetButton.style.display = 'block';
       timerInterval = setInterval(() => {
-        currentSecond++;
+        if (!isPaused) {
+          currentSecond++;
 
-        // Atualizar exibição do tempo
-        const minutes = String(Math.floor(currentSecond / 60)).padStart(2, '0');
-        const seconds = String(currentSecond % 60).padStart(2, '0');
-        timerDisplay.textContent = `${minutes}:${seconds}`;
+          // Atualizar exibição do tempo
+          const minutes = String(Math.floor(currentSecond / 60)).padStart(2, '0');
+          const seconds = String(currentSecond % 60).padStart(2, '0');
+          timerDisplay.textContent = `${minutes}:${seconds}`;
 
-        // Verificar se está em um segundo de alerta
-        const alertIndex = alerts.indexOf(currentSecond);
-        if (alertIndex !== -1) {
-          alertDisplay.textContent = alertMessages[alertIndex];
-          alertDisplay.style.display = 'block';
-          playSound(alertIndex);
+          // Verificar se está em um segundo de alerta
+          const alertIndex = alerts.indexOf(currentSecond);
+          if (alertIndex !== -1) {
+            alertDisplay.textContent = alertMessages[alertIndex];
+            alertDisplay.style.display = 'block';
+            playSound(alertIndex);
 
-          // Remover alerta após 3 segundos
-          setTimeout(() => {
-            alertDisplay.style.display = 'none';
-          }, 3000);
-        }
+            // Remover alerta após 3 segundos
+            setTimeout(() => {
+              alertDisplay.style.display = 'none';
+            }, 3000);
+          }
 
-        // Parar o timer após 1 hora
-        if (currentSecond >= totalSeconds) {
-          clearInterval(timerInterval);
-          timerDisplay.textContent = 'Tempo concluído!';
+          // Parar o timer após 1 hora
+          if (currentSecond >= totalSeconds) {
+            clearInterval(timerInterval);
+            timerDisplay.textContent = 'Tempo concluído!';
+          }
         }
       }, 1000); // 1 segundo em tempo real
+    }
+
+    function pauseTimer() {
+      isPaused = !isPaused;
+      pauseButton.textContent = isPaused ? 'Continuar Timer' : 'Pausar Timer';
     }
 
     function resetTimer() {
       clearInterval(timerInterval);
       currentSecond = 0;
       timerDisplay.textContent = '00:00';
-      startButton.disabled = false;
+      startButton.style.display = 'block';
+      pauseButton.style.display = 'none';
       resetButton.style.display = 'none';
+      isPaused = false;
+      pauseButton.textContent = 'Pausar Timer';
     }
 
     function toggleFullscreen() {
@@ -146,6 +160,7 @@
     }
 
     startButton.addEventListener('click', startTimer);
+    pauseButton.addEventListener('click', pauseTimer);
     resetButton.addEventListener('click', resetTimer);
     fullscreenButton.addEventListener('click', toggleFullscreen);
   </script>
